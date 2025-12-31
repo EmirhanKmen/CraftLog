@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Ultimate Tracker '25</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.6);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --primary: #10b981; /* Moblar için Yeşil */
+            --accent: #6366f1;  /* Başarımlar için Mor */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glow: rgba(99, 102, 241, 0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 40%);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; }
+
+        /* --- NAVBAR --- */
+        .navbar {
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .nav-glass {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 10px;
+            border-radius: 50px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            gap: 5px;
+        }
+
+        .nav-btn {
+            padding: 12px 30px;
+            border-radius: 40px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn.active {
+            background: var(--text-main);
+            color: #000;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-btn.active i { color: #000; }
+
+        /* --- HERO HEADER --- */
+        .hero {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .stats-badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--card-border);
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* --- PAGE CONTENT --- */
+        .page { display: none; animation: fadeIn 0.5s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* --- SEARCH & FILTERS --- */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 2;
+            position: relative;
+            min-width: 280px;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 14px 20px 14px 50px;
+            border-radius: 16px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 18px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        /* --- GRID LAYOUT --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        /* --- CARD DESIGN --- */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            background: rgba(40, 50, 70, 0.8);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* Completed State */
+        .card.done {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--primary);
+        }
+        
+        /* Achievement Specific Colors */
+        .card.ach-done {
+            background: rgba(99, 102, 241, 0.15); /* Mor */
+            border-color: var(--accent);
+        }
+        
+        .card.ach-done h3 { color: var(--accent); }
+        .card.done span { color: var(--primary); font-weight: 700; }
+
+        /* Icon Styling */
+        .check-icon {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            opacity: 0.2;
+            transition: 0.3s;
+        }
+
+        .card.done .check-icon { color: var(--primary); opacity: 1; transform: scale(1.2); }
+        .card.ach-done .check-icon { color: var(--accent); opacity: 1; transform: scale(1.2); }
+
+        /* Achievement Text */
+        .ach-text h3 { font-size: 1rem; margin-bottom: 4px; font-weight: 600; }
+        .ach-text p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+
+        /* --- ACHIEVEMENT CATEGORY TABS --- */
+        .cat-tabs {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            scrollbar-width: none;
+        }
+        .cat-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 12px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .cat-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* --- FOOTER --- */
+        .footer-controls {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid var(--card-border);
+        }
+        .reset-btn {
+            background: none; border: none;
+            color: #ef4444;
+            font-size: 0.9rem;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+        .reset-btn:hover { opacity: 1; text-decoration: underline; }
+
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="nav-glass">
+            <button class="nav-btn active" onclick="showTab('mobs')">
+                <i class="ri-aliens-fill"></i> Moblar
+            </button>
+            <button class="nav-btn" onclick="showTab('achs')">
+                <i class="ri-trophy-fill"></i> Başarımlar
+            </button>
+        </div>
+    </div>
+
+    <div id="page-mobs" class="page active">
+        <div class="hero">
+            <h1>Mob Koleksiyonu</h1>
+            <div class="stats-badge" id="mob-stats">0 / 82 Yakalandı</div>
+        </div>
+
+        <div class="container">
+            <div class="controls">
+                <div class="search-box">
+                    <i class="ri-search-line"></i>
+                    <input type="text" id="mob-search" placeholder="Mob ara (örn: Warden, Creeper)..." oninput="renderMobs()">
+                </div>
+            </div>
+            
+            <div class="grid" id="mob-grid">
+                </div>
+        </div>
+    </div>
+
+    <div id="page-achs" class="page">
+        <div class="hero">
+            <h1 style="background: linear-gradient(to right, #fff, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Başarım Ustası</h1>
+            <div class="stats-badge" id="ach-stats" style="color: var(--accent); border-color: rgba(99,102,241,0.3)">0 Tamamlandı</div>
+        </div>
+
+        <div class="container">
+            <div class="cat-tabs">
+                <button class="cat-btn active" onclick="filterAch('minecraft')">Minecraft</button>
+                <button class="cat-btn" onclick="filterAch('nether')">Nether</button>
+                <button class="cat-btn" onclick="filterAch('end')">The End</button>
+                <button class="cat-btn" onclick="filterAch('adventure')">Macera</button>
+                <button class="cat-btn" onclick="filterAch('husbandry')">Tarım</button>
+            </div>
+
+            <div class="grid" id="ach-grid">
+                </div>
+        </div>
+    </div>
+
+    <div class="container footer-controls">
+        <button class="reset-btn" onclick="resetAll()">[ Tüm Verileri Sıfırla ]</button>
+    </div>
+
+    <script>
+        // ================== VERİLER ==================
+         const mobsList = [
+  "tavuk",
+  "inek",
+  "domuz",
+  "koyun",
+  "deve",
+  "eşşek",
+  "at",
+  "katır",
+  "kedi",
+  "papağan",
+  "kurt",
+  "armadillo",
+  "yarasa",
+  "arı",
+  "tilki",
+  "keçi",
+  "lama",
+  "oselot",
+  "panda",
+  "kutup ayısı",
+  "tavşan",
+  "axolot",
+  "morina",
+  "yunus",
+  "kurbağa",
+  "parlayan mürekkep balığı",
+  "notilus",
+  "kirpi balığı",
+  "somon",
+  "mürekkep balığı",
+  "iribaş",
+  "tropikal balık",
+  "kaplumbağa",
+  "alay",
+  "mantar ineği",
+  "koklayıcı",
+  "bakır golem",
+  "demir golem",
+  "kar golemi",
+  "köylü",
+  "tüccar",
+  "batık(bataklık iskeleti)",
+  "zombi deve",
+  "boğuk",
+  "husk",
+  "husk iskelet",
+  "iskelet at",
+  "serseri iskelet (buz biomu)",
+  "zombi",
+  "zombi at",
+  "zombi notilus",
+  "zombi köylü",
+  "mağara örümceği",
+  "örümcek",
+  "esinti",
+  "gıcırtı",
+  "creeper",
+  "yaşlı guardıan",
+  "guardian",
+  "fantom",
+  "gümüş balığı",
+  "slime",
+  "warden",
+  "cadı",
+  "uyandırıcı",
+  "yağmacı",
+  "evoker",
+  "intikamcı",
+  "blaze",
+  "ghast",
+  "mutlu ghast",
+  "hoğlin",
+  "magma küpü",
+  "piglin",
+  "zalim piglin",
+  "lavgezer",
+  "wither iskeleti",
+  "zoglin",
+  "zombi piglin",
+  "enderman",
+  "endermite",
+  "shulker"
+];
+
+
+        const achievementsDB = {
+            minecraft: [
+                { id: "mc_root", title: "Minecraft", desc: "Oyunun kalbi ve hikayesi." },
+                { id: "mc_stone", title: "Taş Devri", desc: "Yeni kazmanla taş kaz." },
+                { id: "mc_upgrade", title: "Gelişme Çağı", desc: "Daha iyi bir kazma üret." },
+                { id: "mc_iron", title: "Donanım Edin", desc: "Demir külçesi erit." },
+                { id: "mc_suit", title: "Giyin Kuşan", desc: "Demir zırh ile korun." },
+                { id: "mc_diamond", title: "Elmaslar!", desc: "Elmas edin." }
+            ],
+            nether: [
+                { id: "n_root", title: "Nether", desc: "Yazlık kıyafetleri getir." },
+                { id: "n_portal", title: "Daha Derine", desc: "Nether portalı inşa et." },
+                { id: "n_return", title: "İade-i Ziyaret", desc: "Ghast'ı kendi topuyla vur." },
+                { id: "n_debris", title: "Enkazın Altında", desc: "Antik kalıntı bul." },
+                { id: "n_wither", title: "Wither Zirveleri", desc: "Wither çağır." }
+            ],
+            end: [
+                { id: "e_root", title: "The End", desc: "Ya başlangıçsa?" },
+                { id: "e_kill", title: "End'i Özgür Bırak", desc: "Ejderhayı yen." },
+                { id: "e_elytra", title: "Sınırın Ötesi", desc: "Elytra bul." },
+                { id: "e_city", title: "Şehir Turu", desc: "End şehrine gir." }
+            ],
+            adventure: [
+                { id: "a_kill", title: "Canavar Avcısı", desc: "Canavar öldür." },
+                { id: "a_trade", title: "Harika Bir Teklif", desc: "Köylü ile takas yap." },
+                { id: "a_sniper", title: "Keskin Nişancı", desc: "50m'den iskelet vur." },
+                { id: "a_totem", title: "Ölümden Sonra", desc: "Totem kullan." }
+            ],
+            husbandry: [
+                { id: "h_breed", title: "Romantik Akşam", desc: "İki hayvanı çiftleştir." },
+                { id: "h_tame", title: "En İyi Dostlar", desc: "Bir hayvan evcilleştir." }
+            ]
+        };
+
+        // ================== STORAGE & INIT ==================
+        const KEY_MOBS = 'modern_mobs_v1';
+        const KEY_ACH = 'modern_ach_v1';
+
+        let caughtMobs = JSON.parse(localStorage.getItem(KEY_MOBS)) || [];
+        let unlockedAch = JSON.parse(localStorage.getItem(KEY_ACH)) || [];
+        let currentAchCat = 'minecraft';
+
+        window.onload = () => {
+            renderMobs();
+            filterAch('minecraft');
+        };
+
+        // ================== TAB SİSTEMİ ==================
+        function showTab(tabId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + tabId).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        // ================== MOB FONKSİYONLARI ==================
+        function renderMobs() {
+            const grid = document.getElementById('mob-grid');
+            const search = document.getElementById('mob-search').value.toLowerCase();
+            grid.innerHTML = '';
+
+            mobsList.forEach(mob => {
+                if(mob.toLowerCase().includes(search)) {
+                    const isDone = caughtMobs.includes(mob);
+                    const card = document.createElement('div');
+                    card.className = `card ${isDone ? 'done' : ''}`;
+                    card.onclick = () => toggleMob(mob);
+                    
+                    card.innerHTML = `
+                        <span>${mob}</span>
+                        <i class="ri-checkbox-circle-fill check-icon"></i>
+                    `;
+                    grid.appendChild(card);
+                }
+            });
+            document.getElementById('mob-stats').innerText = `${caughtMobs.length} / ${mobsList.length} Yakalandı`;
+        }
+
+        function toggleMob(mob) {
+            if(caughtMobs.includes(mob)) caughtMobs = caughtMobs.filter(m => m !== mob);
+            else caughtMobs.push(mob);
+            localStorage.setItem(KEY_MOBS, JSON.stringify(caughtMobs));
+            renderMobs();
+        }
+
+        // ================== BAŞARIM FONKSİYONLARI ==================
+        function filterAch(cat) {
+            currentAchCat = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                b.classList.remove('active');
+                if(b.innerText.toLowerCase().includes(cat === 'end' ? 'end' : cat === 'adventure' ? 'macera' : cat === 'husbandry' ? 'tarım' : cat)) {
+                    b.classList.add('active');
+                }
+            });
+            renderAch();
+        }
+
+        function renderAch() {
+            const grid = document.getElementById('ach-grid');
+            const list = achievementsDB[currentAchCat];
+            grid.innerHTML = '';
+
+            list.forEach(item => {
+                const isDone = unlockedAch.includes(item.id);
+                const card = document.createElement('div');
+                card.className = `card ${isDone ? 'ach-done' : ''}`;
+                card.onclick = () => toggleAch(item.id);
+
+                card.innerHTML = `
+                    <div class="ach-text">
+                        <h3>${item.title}</h3>
+                        <p>${item.desc}</p>
+                    </div>
+                    <i class="ri-trophy-fill check-icon"></i>
+                `;
+                grid.appendChild(card);
+            });
+            
+            document.getElementById('ach-stats').innerText = `${unlockedAch.length} Tamamlandı`;
+        }
+
+        function toggleAch(id) {
+            if(unlockedAch.includes(id)) unlockedAch = unlockedAch.filter(i => i !== id);
+            else unlockedAch.push(id);
+            localStorage.setItem(KEY_ACH, JSON.stringify(unlockedAch));
+            renderAch();
+        }
+
+        // ================== RESET ==================
+        function resetAll() {
+            if(confirm('Her şeyi silip sıfırdan başlamak istiyor musun?')) {
+                localStorage.removeItem(KEY_MOBS);
+                localStorage.removeItem(KEY_ACH);
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
